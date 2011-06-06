@@ -1,4 +1,7 @@
+// Based on the tutorial at http://amnoid.de/tmp/clangtut/tut.html
+
 #include <string>
+#include <iostream>
 
 #include "llvm/Config/config.h"
 #include "llvm/Support/raw_ostream.h"
@@ -16,19 +19,41 @@
 #include "clang/Basic/TargetOptions.h"
 
 using namespace clang;
+using namespace std;
 
 int main()
 {
   llvm::raw_fd_ostream out_stream(1, false);
   DiagnosticOptions diag_options;
   TextDiagnosticPrinter *diagClient = new TextDiagnosticPrinter(out_stream, diag_options);
-  Diagnostic diags(diagClient);
+  llvm::IntrusiveRefCntPtr<DiagnosticIDs> diag_ids;
+  Diagnostic diags(diag_ids, diagClient);
   LangOptions opts;
   TargetOptions target_opts;
   target_opts.Triple = LLVM_HOSTTRIPLE;
   TargetInfo *target = TargetInfo::CreateTargetInfo(diags, target_opts);
-  SourceManager sm(diags);
-  FileManager fm;
+  FileSystemOptions file_system_opts;
+  FileManager fm(file_system_opts);
+  SourceManager sm(diags, fm);
   HeaderSearch headers(fm);
   Preprocessor pp(diags, opts, *target, sm, headers);
+
+  FileEntry const *file = fm.getFile("clang_test.cpp");
+  FileID main_file = sm.createMainFileID(file);
+  diagClient->BeginSourceFile(opts, &pp);
+  pp.EnterMainSourceFile();
+
+  bool invalid = false;
+  llvm::StringRef sr = sm.getBufferData(main_file, &invalid);
+  (void) sr;
+
+  Token tok;
+  do {
+    pp.Lex(tok);
+    if (diags.hasErrorOccurred()) {
+      break;
+    }
+    pp.DumpToken(tok);
+    cerr << endl;
+  } while (tok.isNot(tok::eof));
 }
