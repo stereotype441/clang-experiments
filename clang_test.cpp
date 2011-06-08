@@ -36,6 +36,13 @@ int main()
   FileManager fm(file_system_opts);
   SourceManager sm(diags, fm);
   HeaderSearch headers(fm);
+  {
+    HeaderSearchOptions hs_opts;
+    ApplyHeaderSearchOptions(headers, hs_opts, opts, 
+    InitHeaderSearch init(headers);
+    init.AddDefaultSystemIncludePaths(opts);
+    init.Realize();
+  }
   Preprocessor pp(diags, opts, *target, sm, headers);
 
   FileEntry const *file = fm.getFile("clang_test.cpp");
