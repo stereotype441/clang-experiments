@@ -16,6 +16,8 @@
 
 #include "clang/Frontend/TextDiagnosticPrinter.h"
 #include "clang/Frontend/DiagnosticOptions.h"
+#include "clang/Frontend/HeaderSearchOptions.h"
+#include "clang/Frontend/Utils.h"
 #include "clang/Basic/TargetOptions.h"
 
 using namespace clang;
@@ -34,6 +36,14 @@ int main()
   FileManager fm;
   SourceManager sm(diags);
   HeaderSearch headers(fm);
+  {
+    HeaderSearchOptions header_search_options;
+    ApplyHeaderSearchOptions(
+        headers, header_search_options, opts, target->getTriple());
+    // InitHeaderSearch init(headers);
+    // init.AddDefaultSystemIncludePaths(opts);
+    // init.Realize();
+  }
   Preprocessor pp(diags, opts, *target, sm, headers);
 
   FileEntry const *file = fm.getFile("test.cpp");
