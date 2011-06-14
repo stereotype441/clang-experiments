@@ -26,23 +26,14 @@ int main()
   llvm::raw_fd_ostream out_stream(1, false);
   DiagnosticOptions diag_options;
   TextDiagnosticPrinter *diagClient = new TextDiagnosticPrinter(out_stream, diag_options);
-  llvm::IntrusiveRefCntPtr<DiagnosticIDs> diag_ids;
-  Diagnostic diags(diag_ids, diagClient);
+  Diagnostic diags(diagClient);
   LangOptions opts;
   TargetOptions target_opts;
   target_opts.Triple = LLVM_HOSTTRIPLE;
   TargetInfo *target = TargetInfo::CreateTargetInfo(diags, target_opts);
-  FileSystemOptions file_system_opts;
-  FileManager fm(file_system_opts);
-  SourceManager sm(diags, fm);
+  FileManager fm;
+  SourceManager sm(diags);
   HeaderSearch headers(fm);
-  {
-    HeaderSearchOptions hs_opts;
-    ApplyHeaderSearchOptions(headers, hs_opts, opts, 
-    InitHeaderSearch init(headers);
-    init.AddDefaultSystemIncludePaths(opts);
-    init.Realize();
-  }
   Preprocessor pp(diags, opts, *target, sm, headers);
 
   FileEntry const *file = fm.getFile("clang_test.cpp");
