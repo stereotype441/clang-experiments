@@ -36,7 +36,7 @@ int main()
   HeaderSearch headers(fm);
   Preprocessor pp(diags, opts, *target, sm, headers);
 
-  FileEntry const *file = fm.getFile("clang_test.cpp");
+  FileEntry const *file = fm.getFile("test.cpp");
   FileID main_file = sm.createMainFileID(file);
   diagClient->BeginSourceFile(opts, &pp);
   pp.EnterMainSourceFile();
