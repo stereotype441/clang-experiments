@@ -18,6 +18,8 @@
 #include "clang/Frontend/DiagnosticOptions.h"
 #include "clang/Frontend/HeaderSearchOptions.h"
 #include "clang/Frontend/Utils.h"
+#include "clang/Frontend/PreprocessorOptions.h"
+#include "clang/Frontend/FrontendOptions.h"
 #include "clang/Basic/TargetOptions.h"
 
 using namespace clang;
@@ -36,15 +38,12 @@ int main()
   FileManager fm;
   SourceManager sm(diags);
   HeaderSearch headers(fm);
-  {
-    HeaderSearchOptions header_search_options;
-    ApplyHeaderSearchOptions(
-        headers, header_search_options, opts, target->getTriple());
-    // InitHeaderSearch init(headers);
-    // init.AddDefaultSystemIncludePaths(opts);
-    // init.Realize();
-  }
   Preprocessor pp(diags, opts, *target, sm, headers);
+  PreprocessorOptions preprocessor_options;
+  HeaderSearchOptions header_search_options;
+  FrontendOptions frontend_options;
+  InitializePreprocessor(
+      pp, preprocessor_options, header_search_options, frontend_options);
 
   FileEntry const *file = fm.getFile("test.cpp");
   FileID main_file = sm.createMainFileID(file);
